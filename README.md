@@ -7,9 +7,10 @@ This repository deploys with *docker-compose* an ELK stack which has kafka clust
 2.  [Install Docker compose](https://docs.docker.com/compose/install/)
 3.  Clone this repository:
     ```
-    git clone git@github.com:sermilrod/kafka-elk-docker-compose.git
+    git clone git@github.com:vigneshmahalingam/kelk-grafana.git
     ```
 4. [Configure File Descriptors and MMap](https://www.elastic.co/guide/en/elasticsearch/guide/current/_file_descriptors_and_mmap.html)
+Please note that this works only for linux. For MAC, please google and find out
 To do so you have to type the following command:
     ```
     sysctl -w vm.max_map_count=262144
@@ -44,13 +45,14 @@ $ curl http://localhost:8888/
 
 The full stack takes around a minute to be fully functional as there are dependencies beteween services.
 After that you should be able to hit Kibana [http://localhost:5601](http://localhost:5601)
+You should be able to hit Grafana at [http://localhost:3000](http://localhost:3000). The default username and password is admin/admin.
 
 Before you see the log entries generated before you have to configure an index pattern in kibana. Make sure you configure it with these two options:
 * Index name or pattern: logstash-*
 * Time-field name: @timestamp
 
 ## Configuration
-The *docker-compose.yml* deploys an ELK solution using kafka as a buffer for log collection. This repository is shipped with the minimal amount of configuration needed to make the stack work. The default config files are:
+The *docker-compose.yml* deploys an ELK solution using kafka as a buffer for log collection. This repository is shipped with the minimal amount of configuration needed to make the stack work. Also, it installs grafana where you will have to add ES as one of the datasources to pull data. The default config files are:
 ### filebeat.yml:
 ```
 filebeat.prospectors:
