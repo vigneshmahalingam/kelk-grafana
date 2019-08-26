@@ -10,17 +10,32 @@ This repository deploys with *docker-compose* an ELK stack which has kafka clust
     git clone git@github.com:vigneshmahalingam/kelk-grafana.git
     ```
 4. [Configure File Descriptors and MMap](https://www.elastic.co/guide/en/elasticsearch/guide/current/_file_descriptors_and_mmap.html)
-Please note that this works only for linux. For MAC, please google and find out
+Please note that this works only for linux
 To do so you have to type the following command:
     ```
     sysctl -w vm.max_map_count=262144
     ```
     Be aware that the previous sysctl setting vanishes when your machine restarts.
     If you want to make it permanent place `vm.max_map_count` setting in your `/etc/sysctl.conf`.
+
+    macOS with Docker for Mac
+    The vm.max_map_count setting must be set within the xhyve virtual machine:
+
+    ```
+    $ screen ~/Library/Containers/com.docker.docker/Data/vms/0/tty
+    ```
+    
+    Just press enter and configure the sysctl setting as you would for Linux:
+    ```
+    sysctl -w vm.max_map_count=262144
+    ```
+    
 5. Create the elasticsearch volume:
     ```bash
     $ cd kafka-elk-docker-compose
-    $ mkdir esdata
+    $ mkdir esdata01
+    $ mkdir esdata02
+    $ mkdir grafanadata
     ```
     By default the *docker-compose.yml* uses *esdata* as the host volumen path name. If you want to use another name you have to edit the *docker-compose.yml* file and create your own structure.
 6. Create the *apache-logs* folder:
@@ -35,6 +50,7 @@ To do so you have to type the following command:
 Deploy your Kafka+ELK Stack using *docker-compose*:
 
 ```bash
+$ export DOCKER_KAFKA_HOST=$(ipconfig getifaddr en0)
 $ docker-compose up -d
 ```
 By default the apache container generating logs is exposed through port 8888. You can perform some requests to generate a few log entries for later visualization in kibana:
