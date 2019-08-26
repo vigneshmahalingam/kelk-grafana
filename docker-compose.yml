@@ -1,7 +1,7 @@
 version: '2'
 services:
   kibana:
-    image: docker.elastic.co/kibana/kibana:5.4.2
+    image: docker.elastic.co/kibana/kibana:7.3.1
     volumes:
       - "./kibana.yml:/usr/share/kibana/config/kibana.yml"
     restart: always
@@ -12,27 +12,47 @@ services:
     depends_on:
       - elasticsearch
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:5.4.3
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.1
+    container_name: elasticsearch
     environment:
+      - node.name=elasticsearch
+      - discovery.seed_hosts=elasticsearch2
+      - cluster.initial_master_nodes=elasticsearch,elasticsearch2
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
-      - xpack.security.enabled=false
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ulimits:
       memlock:
         soft: -1
         hard: -1
-    mem_limit: 1g
     volumes:
-      - "./esdata:/usr/share/elasticsearch/data"
+      - ./esdata01:/usr/share/elasticsearch/data
     ports:
-      - "9200:9200"
-  logstash:
-    image: docker.elastic.co/logstash/logstash:5.1.1
+      - 9200:9200
+  elasticsearch2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.1
+    container_name: elasticsearch2
+    environment:
+      - node.name=elasticsearch2
+      - discovery.seed_hosts=elasticsearch
+      - cluster.initial_master_nodes=elasticsearch,elasticsearch2
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
     volumes:
-      - "./logstash.conf:/config-dir/logstash.conf"
+      - ./esdata02:/usr/share/elasticsearch/data
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.3.1
+    volumes:
+      - "./pipeline/:/usr/share/logstash/pipeline/"
+      - "./config/:/usr/share/logstash/config/"
+      # - "./logstash-conf/conf.d/:/etc/logstash/conf.d/"
     restart: always
-    command: logstash -f /config-dir/logstash.conf
+    # command: logstash -f /usr/share/logstash/pipeline/filebeat_collector/filebeat_processor.conf
     ports:
       - "9600:9600"
       - "7777:7777"
@@ -56,7 +76,9 @@ services:
     hostname: kafka1
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ADVERTISED_HOST_NAME: kafka1
+      # Run this on your terminal before docker compose up
+      # export DOCKER_KAFKA_HOST=$(ipconfig getifaddr en0)
+      KAFKA_ADVERTISED_HOST_NAME: ${DOCKER_KAFKA_HOST}
       KAFKA_ADVERTISED_PORT: 9092
       KAFKA_LOG_RETENTION_HOURS: "168"
       KAFKA_LOG_RETENTION_BYTES: "100000000"
@@ -78,8 +100,8 @@ services:
     hostname: kafka2
     environment:
       KAFKA_BROKER_ID: 2
-      KAFKA_ADVERTISED_HOST_NAME: kafka2
-      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_ADVERTISED_HOST_NAME: ${DOCKER_KAFKA_HOST}
+      KAFKA_ADVERTISED_PORT: 9093
       KAFKA_LOG_RETENTION_HOURS: "168"
       KAFKA_LOG_RETENTION_BYTES: "100000000"
       KAFKA_ZOOKEEPER_CONNECT:  zoo1:2181,zoo2:2181,zoo3:2181
@@ -100,8 +122,8 @@ services:
     hostname: kafka3
     environment:
       KAFKA_BROKER_ID: 3
-      KAFKA_ADVERTISED_HOST_NAME: kafka3
-      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_ADVERTISED_HOST_NAME: ${DOCKER_KAFKA_HOST}
+      KAFKA_ADVERTISED_PORT: 9094
       KAFKA_LOG_RETENTION_HOURS: "168"
       KAFKA_LOG_RETENTION_BYTES: "100000000"
       KAFKA_ZOOKEEPER_CONNECT:  zoo1:2181,zoo2:2181,zoo3:2181

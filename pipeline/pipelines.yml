@@ -1,0 +1,5 @@
+- pipeline.id: filebeat_collector
+  path.config: "/usr/share/logstash/pipeline/filebeat_collector/*.conf"
+
+- pipeline.id: numtest_collector
+  path.config: "/usr/share/logstash/pipeline/numtest_collector/*.conf"
