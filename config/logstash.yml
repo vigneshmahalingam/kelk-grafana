@@ -1,1 +1,9 @@
-path.config: /usr/share/logstash/pipeline
+path.settings: /usr/share/logstash/pipeline
+http.host: "0.0.0.0"
+config.reload.automatic: true
+pipeline.batch.size: 500
+pipeline.batch.delay: 5000
+
+xpack.monitoring.elasticsearch.hosts: ["http://elasticsearch:9200"] 
+xpack.monitoring.elasticsearch.username: "elastic" 
+xpack.monitoring.elasticsearch.password: "changeme"
